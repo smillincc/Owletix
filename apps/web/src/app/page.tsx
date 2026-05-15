@@ -65,15 +65,15 @@ export default function Home() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {[
-            { step: '01', icon: '📍', title: 'Choose a location', desc: 'Browse verified public zones or submit a private property authorization. Every location is pre-approved for flight.' },
-            { step: '02', icon: '💳', title: 'Book & pay securely', desc: 'Reserve with a simple pre-authorization. Only charged for actual flight time, 15-minute minimum.' },
-            { step: '03', icon: '📡', title: 'Watch live', desc: 'Your verified pilot streams directly to you in real-time HD. Request repositioning, zoom, and more.' },
+            { step: '01', icon: '🗺️', title: 'Choose a location', desc: 'Browse verified public zones or submit a private property authorization. Every location is pre-approved for flight.' },
+            { step: '02', icon: '🔐', title: 'Book & pay securely', desc: 'Reserve with a simple pre-authorization. Only charged for actual flight time, 15-minute minimum.' },
+            { step: '03', icon: '🎥', title: 'Watch live', desc: 'Your verified pilot streams directly to you in real-time HD. Request repositioning, zoom, and more.' },
           ].map(s => (
             <div key={s.step} style={{ backgroundColor: '#f5f5f7', borderRadius: '1.5rem', padding: '2.25rem', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: '1.25rem', right: '1.5rem', fontSize: '2.5rem', fontWeight: '900', color: 'rgba(0,0,0,0.04)', letterSpacing: '-0.05em' }}>{s.step}</div>
               <div style={{ fontSize: '2.25rem', marginBottom: '1.25rem' }}>{s.icon}</div>
               <h3 style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '0.6rem', color: '#1d1d1f', letterSpacing: '-0.02em' }}>{s.title}</h3>
-              <p style={{ color: '#6e6e73', lineHeight: '1.7', fontSize: '0.9rem' }}>{s.desc}</p>
+              <p style={{ color: '#4a4a4f', lineHeight: '1.7', fontSize: '0.9rem' }}>{s.desc}</p>
             </div>
           ))}
         </div>
@@ -86,15 +86,15 @@ export default function Home() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1.25rem' }}>
           {[
-            { icon: '🏠', title: 'Real Estate', desc: 'Stunning aerial footage for property listings before they go live', color: '#6366f1' },
-            { icon: '🎉', title: 'Events', desc: 'Capture weddings, festivals, and private events from above', color: '#06b6d4' },
-            { icon: '🔍', title: 'Inspections', desc: 'Roof, solar, and infrastructure checks without risky access', color: '#f59e0b' },
-            { icon: '🌿', title: 'Agriculture', desc: 'Monitor crops, irrigation, and land across large properties', color: '#10b981' },
+            { icon: '🏡', title: 'Real Estate', desc: 'Stunning aerial footage for property listings before they go live', color: '#6366f1' },
+            { icon: '🎬', title: 'Events', desc: 'Capture weddings, festivals, and private events from above', color: '#06b6d4' },
+            { icon: '🔭', title: 'Inspections', desc: 'Roof, solar, and infrastructure checks without risky access', color: '#f59e0b' },
+            { icon: '🌾', title: 'Agriculture', desc: 'Monitor crops, irrigation, and land across large properties', color: '#10b981' },
           ].map(u => (
             <div key={u.title} style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: '1.25rem', padding: '1.75rem', boxShadow: '0 1px 8px rgba(0,0,0,0.04)' }}>
               <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: `${u.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', marginBottom: '1rem' }}>{u.icon}</div>
               <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.4rem', color: '#1d1d1f' }}>{u.title}</h3>
-              <p style={{ color: '#6e6e73', fontSize: '0.875rem', lineHeight: '1.6' }}>{u.desc}</p>
+              <p style={{ color: '#4a4a4f', fontSize: '0.875rem', lineHeight: '1.6' }}>{u.desc}</p>
             </div>
           ))}
         </div>
@@ -103,9 +103,9 @@ export default function Home() {
       {/* Pilot CTA */}
       <section style={{ margin: '0 2rem 7rem', maxWidth: '1060px', marginLeft: 'auto', marginRight: 'auto' }}>
         <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)', borderRadius: '2rem', padding: '4rem 3rem', textAlign: 'center', color: '#fff' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '1.25rem' }}>✈️</div>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1.25rem' }}>🚁</div>
           <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: '800', letterSpacing: '-0.03em', marginBottom: '0.875rem' }}>Are you a drone pilot?</h2>
-          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.05rem', maxWidth: '480px', margin: '0 auto 2.25rem', lineHeight: '1.6' }}>Join our network of FAA-certified pilots. Earn $0.70/min, set your own schedule, fly missions near you.</p>
+          <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '1.05rem', maxWidth: '480px', margin: '0 auto 2.25rem', lineHeight: '1.6' }}>Join our network of FAA-certified pilots. Earn $0.70/min, set your own schedule, fly missions near you.</p>
           <Link href="/pilot/onboarding" style={{ backgroundColor: '#fff', color: '#6366f1', textDecoration: 'none', fontSize: '1rem', fontWeight: '700', padding: '0.875rem 2rem', borderRadius: '980px', display: 'inline-block' }}>Apply to fly →</Link>
         </div>
       </section>
@@ -113,9 +113,9 @@ export default function Home() {
       {/* Safety */}
       <section style={{ padding: '5rem 2rem 7rem', backgroundColor: '#fff', textAlign: 'center' }}>
         <div style={{ maxWidth: '650px', margin: '0 auto' }}>
-          <div style={{ fontSize: '2.25rem', marginBottom: '1.25rem' }}>🛡️</div>
+          <div style={{ fontSize: '2.25rem', marginBottom: '1.25rem' }}>🔒</div>
           <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: '800', letterSpacing: '-0.03em', color: '#1d1d1f', marginBottom: '1rem' }}>Safety & compliance, always</h2>
-          <p style={{ color: '#6e6e73', lineHeight: '1.8', marginBottom: '2.5rem', fontSize: '1rem' }}>Every mission passes our AI risk engine. Every pilot is identity-verified and FAA-certified. No surveillance. No tracking. No exceptions.</p>
+          <p style={{ color: '#444', lineHeight: '1.8', marginBottom: '2.5rem', fontSize: '1rem' }}>Every mission passes our AI risk engine. Every pilot is identity-verified and FAA-certified. No surveillance. No tracking. No exceptions.</p>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             {['FAA Part 107 Pilots Only', 'Identity Verified', 'No Surveillance Policy', 'Live T&S Monitoring'].map(t => (
               <span key={t} style={{ backgroundColor: '#f5f5f7', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '980px', padding: '0.5rem 1.1rem', fontSize: '0.82rem', color: '#1d1d1f', fontWeight: '500' }}>✓ {t}</span>
