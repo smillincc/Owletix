@@ -2,13 +2,17 @@
   "name": "owletix",
   "private": true,
   "packageManager": "npm@10.9.8",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint"
   },
   "devDependencies": {
+    "prisma": "^5.22.0",
     "turbo": "^2.0.0"
   }
 }
