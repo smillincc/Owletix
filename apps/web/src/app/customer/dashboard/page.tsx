@@ -2,131 +2,125 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-const MISSIONS = [
-  { id: '1', zone: 'Griffith Park', city: 'Los Angeles, CA', status: 'COMPLETED', date: 'May 14, 2026', duration: '25 min', amount: '$25.00', pilot: 'James K.' },
-  { id: '2', zone: 'Santa Monica Pier', city: 'Los Angeles, CA', status: 'LIVE', date: 'Today', duration: 'Live now', amount: '$0.00', pilot: 'Maria S.' },
-  { id: '3', zone: 'Golden Gate Park', city: 'San Francisco, CA', status: 'PAYMENT_AUTHORIZED', date: 'May 16, 2026', duration: 'Pending', amount: '$30.00 hold', pilot: 'Pending' },
-];
-
-const STATUS = {
-  LIVE: { color: '#059669', bg: '#ecfdf5', border: '#a7f3d0', label: 'Live Now' },
-  COMPLETED: { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', label: 'Completed' },
-  PAYMENT_AUTHORIZED: { color: '#d97706', bg: '#fffbeb', border: '#fde68a', label: 'Scheduled' },
-  CANCELLED: { color: '#dc2626', bg: '#fef2f2', border: '#fecaca', label: 'Cancelled' },
-};
-
-const NAV = [
-  { icon: '⊞', label: 'Dashboard', href: '/customer/dashboard', active: true },
-  { icon: '🗺', label: 'Browse Zones', href: '/zones', active: false },
-  { icon: '📋', label: 'My Missions', href: '/mission-history', active: false },
-  { icon: '🏠', label: 'Property Auth', href: '/property-authorization/new', active: false },
-  { icon: '✅', label: 'Verify ID', href: '/verify-identity', active: false },
-  { icon: '⚙', label: 'Settings', href: '/settings', active: false },
-];
-
 export default function CustomerDashboard() {
   const [user, setUser] = useState(null);
+  const [missions, setMissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const u = localStorage.getItem('owletix_user');
-    if (u) setUser(JSON.parse(u));
-    else window.location.href = '/auth/login';
+    const token = localStorage.getItem('owletix_access_token');
+    if (!u || !token) { window.location.href = '/auth/login'; return; }
+    setUser(JSON.parse(u));
+
+    fetch(process.env.NEXT_PUBLIC_API_URL + '/missions/my', {
+      headers: { Authorization: 'Bearer ' + token }
+    })
+      .then(r => r.json())
+      .then(d => { setMissions(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+  const totalSpent = missions.filter(m => m.status === 'COMPLETED').reduce((s, m) => s + (m.totalCost || 0), 0);
+  const live = missions.find(m => m.status === 'STREAMING');
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f7', fontFamily: '-apple-system, BlinkMacSystemFont, SF Pro Display, sans-serif', display: 'flex' }}>
+    <div style={{ minHeight:'100vh', backgroundColor:'#f5f5f7', fontFamily:'-apple-system, BlinkMacSystemFont, SF Pro Display, sans-serif', display:'flex' }}>
       {/* Sidebar */}
-      <div style={{ position: 'fixed', left: 0, top: 0, bottom: 0, width: '230px', backgroundColor: '#fff', borderRight: '1px solid rgba(0,0,0,0.08)', padding: '1.5rem', display: 'flex', flexDirection: 'column', zIndex: 100 }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: '#1d1d1f', marginBottom: '2.5rem' }}>
-          <span style={{ fontSize: '1.5rem' }}>🦉</span>
-          <span style={{ fontWeight: '700', fontSize: '1.1rem' }}>Owletix</span>
-        </Link>
-        {NAV.map(item => (
-          <Link key={item.label} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.65rem 0.875rem', borderRadius: '0.625rem', textDecoration: 'none', color: item.active ? '#6366f1' : '#6e6e73', backgroundColor: item.active ? '#f0f0ff' : 'transparent', fontSize: '0.875rem', fontWeight: item.active ? '600' : '400', marginBottom: '0.2rem' }}>
-            <span style={{ fontSize: '1rem' }}>{item.icon}</span>{item.label}
+      <div style={{ position:'fixed', left:0, top:0, bottom:0, width:'220px', backgroundColor:'#fff', borderRight:'1px solid rgba(0,0,0,0.08)', padding:'1.5rem', display:'flex', flexDirection:'column', zIndex:100 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'2.5rem' }}>
+          <span style={{ fontSize:'1.5rem' }}>🦉</span>
+          <span style={{ fontWeight:'800', fontSize:'1rem', color:'#1d1d1f' }}>Owletix</span>
+        </div>
+        {[['⊞','Dashboard','/customer/dashboard',true],['🗺','Browse Zones','/zones',false],['📋','My Missions','/customer/missions',false],['🏠','Property Auth','/property-authorization/new',false],['✅','Verify ID','/customer/verify',false],['⚙️','Settings','/customer/settings',false]].map(([icon,label,href,active]) => (
+          <Link key={label} href={href} style={{ display:'flex', alignItems:'center', gap:'0.75rem', padding:'0.6rem 0.875rem', borderRadius:'0.625rem', textDecoration:'none', color:active?'#6366f1':'#6e6e73', backgroundColor:active?'#f0f0ff':'transparent', fontSize:'0.875rem', fontWeight:active?'600':'400', marginBottom:'0.2rem' }}>
+            <span>{icon}</span>{label}
           </Link>
         ))}
-        <div style={{ marginTop: 'auto', padding: '1rem', backgroundColor: '#f5f5f7', borderRadius: '0.875rem', border: '1px solid rgba(0,0,0,0.06)' }}>
-          <p style={{ fontSize: '0.82rem', fontWeight: '600', color: '#1d1d1f', marginBottom: '0.15rem' }}>{user?.firstName} {user?.lastName}</p>
-          <p style={{ fontSize: '0.75rem', color: '#6e6e73', marginBottom: '0.625rem' }}>{user?.email}</p>
-          <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} style={{ background: 'none', border: 'none', color: '#6e6e73', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}>Sign out</button>
+        <div style={{ marginTop:'auto', padding:'0.875rem', backgroundColor:'#f5f5f7', borderRadius:'0.875rem' }}>
+          <p style={{ fontSize:'0.8rem', fontWeight:'600', color:'#1d1d1f', marginBottom:'0.1rem' }}>{user?.firstName} {user?.lastName}</p>
+          <p style={{ fontSize:'0.72rem', color:'#6e6e73', marginBottom:'0.5rem' }}>{user?.email}</p>
+          <button onClick={() => { localStorage.clear(); window.location.href='/'; }} style={{ background:'none', border:'none', color:'#6e6e73', fontSize:'0.75rem', cursor:'pointer', padding:0 }}>Sign out</button>
         </div>
       </div>
 
       {/* Main */}
-      <div style={{ marginLeft: '230px', padding: '2.5rem', flex: 1, maxWidth: 'calc(100vw - 230px)' }}>
-        <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '1.625rem', fontWeight: '800', letterSpacing: '-0.03em', color: '#1d1d1f', marginBottom: '0.2rem' }}>Good {greeting}, {user?.firstName || 'there'} 👋</h1>
-          <p style={{ color: '#6e6e73', fontSize: '0.875rem' }}>Here is what is happening with your aerial views</p>
-        </div>
+      <div style={{ marginLeft:'220px', padding:'2.5rem', flex:1 }}>
+        <h1 style={{ fontSize:'1.75rem', fontWeight:'800', letterSpacing:'-0.03em', color:'#1d1d1f', marginBottom:'0.25rem' }}>
+          Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.firstName} 👋
+        </h1>
+        <p style={{ color:'#6e6e73', fontSize:'0.9rem', marginBottom:'2rem' }}>Here is what is happening with your aerial views</p>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'1rem', marginBottom:'2rem' }}>
           {[
-            { icon: '🛫', label: 'Total Flights', value: '3', sub: '+1 this month' },
-            { icon: '⏱', label: 'Hours Viewed', value: '1.2h', sub: '72 min total' },
-            { icon: '💳', label: 'Total Spent', value: '$55', sub: 'Avg $18 each' },
-            { icon: '⭐', label: 'Avg Rating', value: '4.9', sub: 'Top reviewer' },
+            { label:'Total Flights', value: missions.filter(m=>m.status==='COMPLETED').length, sub:'completed missions' },
+            { label:'Live Now', value: missions.filter(m=>m.status==='STREAMING').length, sub:'active streams' },
+            { label:'Total Spent', value:'$'+totalSpent.toFixed(2), sub:'across all missions' },
+            { label:'Pending', value: missions.filter(m=>['PENDING','ACCEPTED'].includes(m.status)).length, sub:'awaiting flight' },
           ].map(s => (
-            <div key={s.label} style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: '1rem', padding: '1.375rem', boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}>
-              <div style={{ fontSize: '1.375rem', marginBottom: '0.625rem' }}>{s.icon}</div>
-              <div style={{ fontSize: '1.625rem', fontWeight: '800', letterSpacing: '-0.03em', color: '#1d1d1f', marginBottom: '0.15rem' }}>{s.value}</div>
-              <div style={{ fontSize: '0.75rem', color: '#6e6e73' }}>{s.label}</div>
-              <div style={{ fontSize: '0.72rem', color: '#6366f1', marginTop: '0.3rem', fontWeight: '500' }}>{s.sub}</div>
+            <div key={s.label} style={{ backgroundColor:'#fff', borderRadius:'1rem', padding:'1.5rem', border:'1px solid rgba(0,0,0,0.07)', boxShadow:'0 1px 6px rgba(0,0,0,0.04)' }}>
+              <div style={{ fontSize:'2rem', fontWeight:'800', color:'#1d1d1f', letterSpacing:'-0.03em', marginBottom:'0.2rem' }}>{s.value}</div>
+              <div style={{ fontSize:'0.78rem', fontWeight:'600', color:'#1d1d1f', marginBottom:'0.1rem' }}>{s.label}</div>
+              <div style={{ fontSize:'0.72rem', color:'#6e6e73' }}>{s.sub}</div>
             </div>
           ))}
         </div>
 
-        {/* Live alert */}
-        <div style={{ backgroundColor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '1rem', padding: '1.125rem 1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-            <div style={{ width: '9px', height: '9px', backgroundColor: '#10b981', borderRadius: '50%', boxShadow: '0 0 0 3px rgba(16,185,129,0.2)' }}></div>
+        {/* Live session banner */}
+        {live && (
+          <div style={{ backgroundColor:'#ecfdf5', border:'1px solid #a7f3d0', borderRadius:'1rem', padding:'1.25rem 1.5rem', marginBottom:'2rem', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <div>
-              <p style={{ fontWeight: '600', fontSize: '0.875rem', color: '#065f46', marginBottom: '0.1rem' }}>Live session in progress — Santa Monica Pier</p>
-              <p style={{ fontSize: '0.78rem', color: '#059669' }}>Pilot: Maria S. · Started 8 minutes ago</p>
+              <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'0.2rem' }}>
+                <span style={{ width:'8px', height:'8px', backgroundColor:'#10b981', borderRadius:'50%', display:'inline-block' }}></span>
+                <span style={{ fontWeight:'700', color:'#059669', fontSize:'0.9rem' }}>Live session in progress — {live.zone?.name || 'Active Zone'}</span>
+              </div>
+              <p style={{ fontSize:'0.8rem', color:'#6e6e73' }}>Pilot: {live.pilot?.firstName || 'Your pilot'}</p>
             </div>
+            <Link href={`/customer/watch/${live.id}`} style={{ backgroundColor:'#10b981', color:'#fff', textDecoration:'none', padding:'0.625rem 1.25rem', borderRadius:'980px', fontSize:'0.875rem', fontWeight:'700' }}>Watch Live →</Link>
           </div>
-          <Link href="/missions/live" style={{ backgroundColor: '#059669', color: '#fff', textDecoration: 'none', padding: '0.55rem 1.25rem', borderRadius: '980px', fontSize: '0.825rem', fontWeight: '700' }}>Watch Live →</Link>
-        </div>
+        )}
 
-        {/* CTA */}
-        <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)', borderRadius: '1.25rem', padding: '1.875rem 2rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+        {/* Book CTA */}
+        <div style={{ background:'linear-gradient(135deg, #6366f1, #06b6d4)', borderRadius:'1.25rem', padding:'2rem 2.5rem', marginBottom:'2rem', display:'flex', justifyContent:'space-between', alignItems:'center', color:'#fff' }}>
           <div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#fff', marginBottom: '0.3rem' }}>Book your next aerial view</h3>
-            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.85rem' }}>50+ approved zones available. From $15 for 15 minutes.</p>
+            <h2 style={{ fontWeight:'800', fontSize:'1.25rem', marginBottom:'0.3rem' }}>Book your next aerial view</h2>
+            <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'0.875rem' }}>36 approved zones across California. From $15 for 15 minutes.</p>
           </div>
-          <Link href="/zones" style={{ backgroundColor: '#fff', color: '#6366f1', textDecoration: 'none', padding: '0.75rem 1.5rem', borderRadius: '980px', fontWeight: '700', fontSize: '0.875rem', whiteSpace: 'nowrap' }}>Browse zones →</Link>
+          <Link href="/zones" style={{ backgroundColor:'#fff', color:'#6366f1', textDecoration:'none', padding:'0.75rem 1.5rem', borderRadius:'980px', fontWeight:'700', fontSize:'0.875rem', whiteSpace:'nowrap' as const }}>Browse zones →</Link>
         </div>
 
         {/* Missions */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ fontSize: '1rem', fontWeight: '700', color: '#1d1d1f' }}>Recent missions</h2>
-            <Link href="/mission-history" style={{ color: '#6366f1', textDecoration: 'none', fontSize: '0.82rem', fontWeight: '500' }}>View all →</Link>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
+            <h2 style={{ fontSize:'1rem', fontWeight:'700', color:'#1d1d1f' }}>Recent missions</h2>
+            <Link href="/customer/missions" style={{ fontSize:'0.8rem', color:'#6366f1', textDecoration:'none', fontWeight:'600' }}>View all →</Link>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-            {MISSIONS.map(m => {
-              const cfg = STATUS[m.status] || STATUS.CANCELLED;
-              return (
-                <div key={m.id} style={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderRadius: '0.875rem', padding: '1.125rem 1.375rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.2rem' }}>
-                      <h3 style={{ fontWeight: '600', fontSize: '0.9rem', color: '#1d1d1f' }}>{m.zone}</h3>
-                      <span style={{ backgroundColor: cfg.bg, color: cfg.color, border: '1px solid ' + cfg.border, fontSize: '0.68rem', fontWeight: '600', padding: '0.15rem 0.55rem', borderRadius: '980px' }}>{cfg.label}</span>
-                    </div>
-                    <p style={{ fontSize: '0.775rem', color: '#6e6e73' }}>{m.city} · {m.date} · Pilot: {m.pilot}</p>
+          {loading ? (
+            <div style={{ backgroundColor:'#fff', borderRadius:'1rem', padding:'3rem', textAlign:'center', color:'#6e6e73' }}>Loading your missions...</div>
+          ) : missions.length === 0 ? (
+            <div style={{ backgroundColor:'#fff', borderRadius:'1rem', padding:'3rem', textAlign:'center', border:'1px solid rgba(0,0,0,0.07)' }}>
+              <p style={{ fontSize:'2rem', marginBottom:'0.75rem' }}>🚁</p>
+              <p style={{ fontWeight:'600', color:'#1d1d1f', marginBottom:'0.4rem' }}>No missions yet</p>
+              <p style={{ color:'#6e6e73', fontSize:'0.875rem', marginBottom:'1.5rem' }}>Book your first aerial view session</p>
+              <Link href="/zones" style={{ backgroundColor:'#6366f1', color:'#fff', textDecoration:'none', padding:'0.75rem 1.5rem', borderRadius:'980px', fontWeight:'700', fontSize:'0.875rem' }}>Browse zones</Link>
+            </div>
+          ) : (
+            <div style={{ backgroundColor:'#fff', borderRadius:'1rem', border:'1px solid rgba(0,0,0,0.07)', overflow:'hidden', boxShadow:'0 1px 6px rgba(0,0,0,0.04)' }}>
+              {missions.slice(0,10).map((m, i) => (
+                <div key={m.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'1rem 1.5rem', borderBottom: i < missions.length-1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
+                  <div>
+                    <p style={{ fontWeight:'600', fontSize:'0.9rem', color:'#1d1d1f', marginBottom:'0.2rem' }}>{m.zone?.name || m.zoneId || 'Mission'}</p>
+                    <p style={{ fontSize:'0.78rem', color:'#6e6e73' }}>{new Date(m.createdAt).toLocaleDateString()} · {m.pilot ? `Pilot: ${m.pilot.firstName}` : 'Awaiting pilot'}</p>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontWeight: '700', fontSize: '0.875rem', color: '#1d1d1f' }}>{m.amount}</p>
-                    <p style={{ fontSize: '0.72rem', color: '#6e6e73' }}>{m.duration}</p>
+                  <div style={{ textAlign:'right' }}>
+                    <span style={{ fontSize:'0.72rem', fontWeight:'600', padding:'0.2rem 0.6rem', borderRadius:'980px', backgroundColor: m.status==='COMPLETED'?'#ecfdf5':m.status==='STREAMING'?'#eff6ff':m.status==='CANCELLED'?'#fff2f2':'#fffbeb', color: m.status==='COMPLETED'?'#059669':m.status==='STREAMING'?'#2563eb':m.status==='CANCELLED'?'#dc2626':'#d97706' }}>{m.status}</span>
+                    <p style={{ fontSize:'0.875rem', fontWeight:'700', color:'#1d1d1f', marginTop:'0.3rem' }}>${(m.totalCost||0).toFixed(2)}</p>
                   </div>
-                  {m.status === 'LIVE' && <Link href="/missions/live" style={{ backgroundColor: '#059669', color: '#fff', textDecoration: 'none', padding: '0.45rem 0.875rem', borderRadius: '980px', fontSize: '0.775rem', fontWeight: '700' }}>Watch</Link>}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
