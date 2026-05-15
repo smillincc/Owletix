@@ -17,15 +17,49 @@ export default function VerifyIDPage() {
     setStatus(parsed.identityVerificationStatus || 'NOT_STARTED');
   }, []);
 
+  const getValidToken = async () => {
+    const token = localStorage.getItem('owletix_access_token');
+    const refreshToken = localStorage.getItem('owletix_refresh_token') || localStorage.getItem('owletix_refreshToken');
+    
+    // Try current token first
+    if (token) {
+      const testRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/me', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      if (testRes.ok) return token;
+    }
+    
+    // Try refresh
+    if (refreshToken) {
+      const refreshRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        localStorage.setItem('owletix_access_token', data.accessToken);
+        if (data.refreshToken) localStorage.setItem('owletix_refresh_token', data.refreshToken);
+        return data.accessToken;
+      }
+    }
+    
+    // Force re-login
+    window.location.href = '/auth/login';
+    return null;
+  };
+
   const startVerification = async () => {
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('owletix_access_token');
+      const token = await getValidToken();
+      if (!token) return;
+      
       const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/identity-verification/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({ provider: 'stripe' }),
+        body: JSON.stringify({ returnUrl: window.location.origin + '/customer/verify?status=complete' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to start verification');
