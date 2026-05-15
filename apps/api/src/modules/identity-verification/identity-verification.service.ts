@@ -16,6 +16,13 @@ export class IdentityVerificationService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('User not found');
 
+    // Upsert identity verification record
+    await this.prisma.identityVerification.upsert({
+      where: { userId },
+      create: { userId, status: 'PENDING' },
+      update: { status: 'PENDING' },
+    });
+
     try {
       const session = await this.stripe.identity.verificationSessions.create({
         type: 'document',
@@ -30,26 +37,22 @@ export class IdentityVerificationService {
         return_url: returnUrl || (process.env.FRONTEND_URL + '/customer/verify?status=complete'),
       });
 
-      await this.prisma.user.update({
-        where: { id: userId },
-        data: { identityVerificationStatus: 'PENDING' },
+      await this.prisma.identityVerification.update({
+        where: { userId },
+        data: { providerRef: session.id },
       });
 
       return { url: session.url, sessionId: session.id };
     } catch (err) {
-      await this.prisma.user.update({
-        where: { id: userId },
-        data: { identityVerificationStatus: 'PENDING' },
-      });
       return { url: null, sessionId: null, message: 'Verification submitted for manual review' };
     }
   }
 
   async getStatus(userId: string) {
-    return this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { identityVerificationStatus: true, identityVerified: true },
+    const record = await this.prisma.identityVerification.findUnique({
+      where: { userId },
     });
+    return { status: record?.status || 'NOT_STARTED' };
   }
 
   async handleWebhook(payload: string, signature: string) {
@@ -66,9 +69,9 @@ export class IdentityVerificationService {
       const session = event.data.object as Stripe.Identity.VerificationSession;
       const userId = session.metadata?.userId;
       if (userId) {
-        await this.prisma.user.update({
-          where: { id: userId },
-          data: { identityVerificationStatus: 'VERIFIED', identityVerified: true },
+        await this.prisma.identityVerification.update({
+          where: { userId },
+          data: { status: 'VERIFIED' },
         });
       }
     }
@@ -77,9 +80,9 @@ export class IdentityVerificationService {
       const session = event.data.object as Stripe.Identity.VerificationSession;
       const userId = session.metadata?.userId;
       if (userId) {
-        await this.prisma.user.update({
-          where: { id: userId },
-          data: { identityVerificationStatus: 'FAILED' },
+        await this.prisma.identityVerification.update({
+          where: { userId },
+          data: { status: 'FAILED' },
         });
       }
     }
