@@ -100,6 +100,22 @@ export default function ZonesPage() {
         setLoaded(true);
         map.addControl(new mgl.NavigationControl(), 'top-right');
 
+        // FAA Official UAS Facility Maps - real legal airspace data
+        map.addSource('faa-uasfm', {
+          type: 'raster',
+          tiles: ['https://faa-maps.arcgis.com/arcgis/rest/services/NASR/UAS_Facility_Maps/MapServer/tile/{z}/{y}/{x}'],
+          tileSize: 256,
+          attribution: 'FAA UAS Facility Maps'
+        });
+        map.addLayer({ id: 'faa-uasfm-layer', type: 'raster', source: 'faa-uasfm', paint: { 'raster-opacity': 0.5 } });
+
+        // FAA Class B/C/D Airspace from official ArcGIS
+        map.addSource('faa-class-airspace', {
+          type: 'raster',
+          tiles: ['https://services6.arcgis.com/ssFJjBXIUyZDrSYZ/arcgis/rest/services/Class_Airspace/FeatureServer/0/query?where=1%3D1&outFields=*&f=geojson'],
+          tileSize: 256
+        });
+
         // Restricted zone circles
         RESTRICTED.forEach((r, i) => {
           const pts = 64;
