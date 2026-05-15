@@ -23,3 +23,4 @@ export class IdentityVerificationController {
   async webhook(@Headers('stripe-signature') sig: string, @Body() payload: any) {
     return this.service.handleWebhook(JSON.stringify(payload), sig);
   }
+}
