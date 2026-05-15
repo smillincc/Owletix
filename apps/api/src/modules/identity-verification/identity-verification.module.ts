@@ -4,9 +4,20 @@ import { IdentityVerificationController } from './identity-verification.controll
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AuditLogModule } from '../audit-log/audit-log.module';
 import { AuthModule } from '../auth/auth.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [PrismaModule, AuditLogModule, AuthModule],
+  imports: [
+    PrismaModule,
+    AuditLogModule,
+    AuthModule,
+    PassportModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'dev-secret',
+      signOptions: { expiresIn: '15m' },
+    }),
+  ],
   providers: [IdentityVerificationService],
   controllers: [IdentityVerificationController],
   exports: [IdentityVerificationService],
