@@ -29,7 +29,7 @@ export default function SignupPage() {
     }
   };
 
-  const inp = { width: '100%', backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '0.75rem', padding: '0.875rem 1rem', color: '#1d1d1f', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' };
+  const inp = { width: '100%', backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '0.75rem', padding: '0.875rem 1rem', color: '#1d1d1f', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' as const, fontFamily: 'inherit' };
 
   if (success) return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '-apple-system, BlinkMacSystemFont, SF Pro Display, sans-serif' }}>
