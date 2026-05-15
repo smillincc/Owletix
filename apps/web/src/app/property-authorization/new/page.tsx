@@ -124,6 +124,28 @@ export default function PropertyAuthPage() {
             </p>
           </div>
 
+          {/* ID Address Match Warning */}
+          {user?.identityVerificationStatus !== 'VERIFIED' && (
+            <div style={{ backgroundColor:'#fff2f2', border:'1px solid #fecaca', borderRadius:'1rem', padding:'1.1rem 1.25rem', marginBottom:'1.5rem', display:'flex', gap:'0.875rem' }}>
+              <span style={{ fontSize:'1.25rem', flexShrink:0 }}>🔒</span>
+              <div>
+                <p style={{ fontWeight:'700', color:'#dc2626', fontSize:'0.875rem', marginBottom:'0.25rem' }}>Identity Verification Required</p>
+                <p style={{ fontSize:'0.8rem', color:'#9b1c1c', lineHeight:'1.5', margin:0 }}>You must verify your identity before submitting a property authorization. The property address must match your verified ID address.</p>
+                <a href="/customer/verify" style={{ display:'inline-block', marginTop:'0.625rem', backgroundColor:'#dc2626', color:'#fff', textDecoration:'none', padding:'0.4rem 1rem', borderRadius:'980px', fontSize:'0.78rem', fontWeight:'700' }}>Verify ID First →</a>
+              </div>
+            </div>
+          )}
+
+          {user?.identityVerificationStatus === 'VERIFIED' && (
+            <div style={{ backgroundColor:'#ecfdf5', border:'1px solid #a7f3d0', borderRadius:'1rem', padding:'1rem 1.25rem', marginBottom:'1.5rem', display:'flex', gap:'0.875rem', alignItems:'center' }}>
+              <span style={{ fontSize:'1.25rem' }}>✅</span>
+              <div>
+                <p style={{ fontWeight:'700', color:'#059669', fontSize:'0.875rem', marginBottom:'0.15rem' }}>Identity Verified</p>
+                <p style={{ fontSize:'0.78rem', color:'#065f46', margin:0 }}>The property address you enter must match the address on your verified government ID. Our team will cross-check this during review.</p>
+              </div>
+            </div>
+          )}
+
           {/* Progress steps */}
           <div style={{ display:'flex', gap:'0', marginBottom:'2rem' }}>
             {['Property Details','Owner Info','Declarations','Review'].map((s, i) => (
@@ -152,6 +174,7 @@ export default function PropertyAuthPage() {
                   <label style={{ display:'block', fontSize:'0.82rem', fontWeight:'600', color:'#1d1d1f', marginBottom:'0.4rem' }}>Street Address</label>
                   <input value={form.address} onChange={e => update('address', e.target.value)} placeholder="123 Main Street"
                     style={{ width:'100%', backgroundColor:'#f5f5f7', border:'1px solid rgba(0,0,0,0.1)', borderRadius:'0.75rem', padding:'0.875rem', color:'#1d1d1f', fontSize:'0.9rem', outline:'none', boxSizing:'border-box' as const }} />
+                  <p style={{ fontSize:'0.72rem', color:'#6366f1', marginTop:'0.3rem', fontWeight:'500' }}>⚠️ Must match the address on your verified government ID</p>
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 120px 100px', gap:'0.75rem' }}>
                   <div>
@@ -217,9 +240,9 @@ export default function PropertyAuthPage() {
                     style={{ width:'100%', backgroundColor:'#f5f5f7', border:'1px solid rgba(0,0,0,0.1)', borderRadius:'0.75rem', padding:'0.875rem', color:'#1d1d1f', fontSize:'0.9rem', outline:'none', resize:'vertical' as const, fontFamily:'inherit', boxSizing:'border-box' as const }} />
                 </div>
               </div>
-              <button onClick={() => setStep(2)} disabled={!form.propertyName||!form.address||!form.city||!form.ownershipType||!form.purpose}
+              <button onClick={() => setStep(2)} disabled={!form.propertyName||!form.address||!form.city||!form.ownershipType||!form.purpose||user?.identityVerificationStatus!=='VERIFIED'}
                 style={{ width:'100%', backgroundColor:'#6366f1', color:'#fff', border:'none', borderRadius:'980px', padding:'0.9rem', fontSize:'0.95rem', fontWeight:'600', cursor:'pointer', opacity:!form.propertyName||!form.address||!form.city||!form.ownershipType||!form.purpose?0.5:1, fontFamily:'inherit', marginTop:'1.5rem' }}>
-                Continue to Owner Info →
+                {user?.identityVerificationStatus !== 'VERIFIED' ? '🔒 Verify ID First' : 'Continue to Owner Info →'}
               </button>
             </div>
           )}
