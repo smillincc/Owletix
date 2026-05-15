@@ -23,14 +23,3 @@ export class IdentityVerificationController {
   async webhook(@Headers('stripe-signature') sig: string, @Body() payload: any) {
     return this.service.handleWebhook(JSON.stringify(payload), sig);
   }
-
-  @Post('test-no-auth')
-  async testNoAuth() {
-    try {
-      const result = await this.service.startVerification('test-user-id', 'https://owletix-web.vercel.app/customer/verify');
-      return { ok: true, result };
-    } catch (err: any) {
-      return { ok: false, error: err.message, stack: err.stack };
-    }
-  }
-}
