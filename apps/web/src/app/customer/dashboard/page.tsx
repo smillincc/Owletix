@@ -32,7 +32,7 @@ export default function CustomerDashboard() {
           <span style={{ fontSize:'1.5rem' }}>🦉</span>
           <span style={{ fontWeight:'800', fontSize:'1rem', color:'#1d1d1f' }}>Owletix</span>
         </div>
-        {[['⊞','Dashboard','/customer/dashboard',true],['🗺','Browse Zones','/zones',false],['📋','My Missions','/customer/missions',false],['🏠','Property Auth','/property-authorization/new',false],['✅','Verify ID','/customer/verify',false],['⚙️','Settings','/customer/settings',false]].map(([icon,label,href,active]) => (
+        {([['⊞','Dashboard','/customer/dashboard',true],['🗺','Browse Zones','/zones',false],['📋','My Missions','/customer/missions',false],['🏠','Property Auth','/property-authorization/new',false],['✅','Verify ID','/customer/verify',false],['⚙️','Settings','/customer/settings',false]] as [string,string,string,boolean][]).map(([icon,label,href,active]) => (
           <Link key={label} href={href} style={{ display:'flex', alignItems:'center', gap:'0.75rem', padding:'0.6rem 0.875rem', borderRadius:'0.625rem', textDecoration:'none', color:active?'#6366f1':'#6e6e73', backgroundColor:active?'#f0f0ff':'transparent', fontSize:'0.875rem', fontWeight:active?'600':'400', marginBottom:'0.2rem' }}>
             <span>{icon}</span>{label}
           </Link>
