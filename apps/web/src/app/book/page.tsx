@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-export default function BookPage() {
+import { Suspense } from 'react';
+
+function BookContent() {
   const [user, setUser] = useState<any>(null);
   const [verified, setVerified] = useState(false);
   const [step, setStep] = useState(1);
@@ -174,5 +176,13 @@ export default function BookPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function BookPage() {
+  return (
+    <Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'100vh',fontFamily:'-apple-system,sans-serif',color:'#6e6e73'}}>Loading...</div>}>
+      <BookContent />
+    </Suspense>
   );
 }
