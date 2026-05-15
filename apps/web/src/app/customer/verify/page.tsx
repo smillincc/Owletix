@@ -53,27 +53,55 @@ export default function VerifyIDPage() {
     setLoading(true);
     setError('');
     try {
-      const token = await getValidToken();
-      if (!token) return;
-      
+      let token = localStorage.getItem('owletix_access_token');
+      if (!token) { window.location.href = '/auth/login'; return; }
+
       const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/identity-verification/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
         body: JSON.stringify({ returnUrl: window.location.origin + '/customer/verify?status=complete' }),
       });
+
+      if (res.status === 401) {
+        // Token expired - try refresh
+        const rToken = localStorage.getItem('owletix_refresh_token');
+        if (rToken) {
+          const rRes = await fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/refresh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken: rToken }),
+          });
+          if (rRes.ok) {
+            const rData = await rRes.json();
+            token = rData.accessToken;
+            localStorage.setItem('owletix_access_token', token);
+            // Retry
+            const res2 = await fetch(process.env.NEXT_PUBLIC_API_URL + '/identity-verification/start', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+              body: JSON.stringify({ returnUrl: window.location.origin + '/customer/verify?status=complete' }),
+            });
+            const data2 = await res2.json();
+            if (!res2.ok) throw new Error(data2.message || 'Failed');
+            if (data2.url) { window.location.href = data2.url; return; }
+            setStatus('PENDING');
+            return;
+          }
+        }
+        window.location.href = '/auth/login';
+        return;
+      }
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to start verification');
       if (data.url) {
         window.location.href = data.url;
       } else {
         setStatus('PENDING');
-        const u = JSON.parse(localStorage.getItem('owletix_user') || '{}');
-        u.identityVerificationStatus = 'PENDING';
-        localStorage.setItem('owletix_user', JSON.stringify(u));
       }
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
-  };
+  };;
 
   const NAV = [['⊞','Dashboard','/customer/dashboard',false],['🗺','Browse Zones','/zones',false],['📋','My Missions','/customer/missions',false],['🏠','Property Auth','/property-authorization/new',false],['✅','Verify ID','/customer/verify',true],['⚙️','Settings','/customer/settings',false]] as [string,string,string,boolean][];
 
