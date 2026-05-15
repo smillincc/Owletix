@@ -45,10 +45,7 @@ export default function PropertyAuthPage() {
     const token = localStorage.getItem('owletix_access_token');
     if (!u || !token) { window.location.href = '/auth/login'; return; }
     const parsed = JSON.parse(u);
-    if (parsed.identityVerificationStatus !== 'VERIFIED') {
-      window.location.href = '/customer/verify';
-      return;
-    }
+    // Don't hard redirect - show banner instead
     setUser(parsed);
   }, []);
 
