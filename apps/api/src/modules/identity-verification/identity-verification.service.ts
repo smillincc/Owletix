@@ -16,24 +16,20 @@ export class IdentityVerificationService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('User not found');
 
-    // Upsert identity verification record
     await this.prisma.identityVerification.upsert({
       where: { userId },
       create: { userId, status: 'PENDING' },
       update: { status: 'PENDING' },
     });
 
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return { url: null, sessionId: null, status: 'PENDING', message: 'Verification submitted. Manual review in 1-2 business days.' };
+    }
+
     try {
       const session = await this.stripe.identity.verificationSessions.create({
         type: 'document',
         metadata: { userId },
-        options: {
-          document: {
-            require_id_number: true,
-            require_live_capture: true,
-            require_matching_selfie: true,
-          },
-        },
         return_url: returnUrl || (process.env.FRONTEND_URL + '/customer/verify?status=complete'),
       });
 
@@ -42,9 +38,15 @@ export class IdentityVerificationService {
         data: { providerRef: session.id },
       });
 
-      return { url: session.url, sessionId: session.id };
-    } catch (err) {
-      return { url: null, sessionId: null, message: 'Verification submitted for manual review' };
+      return { url: session.url, sessionId: session.id, status: 'PENDING' };
+    } catch (err: any) {
+      console.error('Stripe Identity error:', err?.message);
+      return { 
+        url: null, 
+        sessionId: null, 
+        status: 'PENDING',
+        message: 'Verification submitted. Our team will review within 1-2 business days.' 
+      };
     }
   }
 
@@ -57,8 +59,9 @@ export class IdentityVerificationService {
 
   async handleWebhook(payload: string, signature: string) {
     const webhookSecret = process.env.STRIPE_IDENTITY_WEBHOOK_SECRET || '';
-    let event: Stripe.Event;
+    if (!webhookSecret) return { received: true };
 
+    let event: Stripe.Event;
     try {
       event = this.stripe.webhooks.constructEvent(payload, signature, webhookSecret);
     } catch {
@@ -69,9 +72,10 @@ export class IdentityVerificationService {
       const session = event.data.object as Stripe.Identity.VerificationSession;
       const userId = session.metadata?.userId;
       if (userId) {
-        await this.prisma.identityVerification.update({
+        await this.prisma.identityVerification.upsert({
           where: { userId },
-          data: { status: 'VERIFIED' },
+          create: { userId, status: 'VERIFIED' },
+          update: { status: 'VERIFIED' },
         });
       }
     }
@@ -80,9 +84,10 @@ export class IdentityVerificationService {
       const session = event.data.object as Stripe.Identity.VerificationSession;
       const userId = session.metadata?.userId;
       if (userId) {
-        await this.prisma.identityVerification.update({
+        await this.prisma.identityVerification.upsert({
           where: { userId },
-          data: { status: 'FAILED' },
+          create: { userId, status: 'FAILED' },
+          update: { status: 'FAILED' },
         });
       }
     }
