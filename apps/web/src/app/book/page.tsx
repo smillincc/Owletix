@@ -28,10 +28,20 @@ function BookContent() {
   useEffect(() => {
     const u = localStorage.getItem('owletix_user');
     const token = localStorage.getItem('owletix_access_token');
-    if (!u || !token) { window.location.href = '/auth/login'; return; }
-    const parsed = JSON.parse(u);
-    setUser(parsed);
-    setVerified(parsed.identityVerificationStatus === 'VERIFIED');
+    if (!u || !token) { 
+      // Save intended destination and redirect to login
+      sessionStorage.setItem('redirect_after_login', window.location.href);
+      window.location.href = '/auth/login'; 
+      return; 
+    }
+    try {
+      const parsed = JSON.parse(u);
+      setUser(parsed);
+      setVerified(parsed.identityVerificationStatus === 'VERIFIED');
+    } catch {
+      localStorage.clear();
+      window.location.href = '/auth/login';
+    }
   }, []);
 
   const submit = async () => {

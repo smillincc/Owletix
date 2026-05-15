@@ -171,7 +171,7 @@ export default function ZonesPage() {
                 \${approvalBadge}
                 <span style="font-size:10px;background:#f0f0ff;color:#6366f1;border-radius:99px;padding:2px 8px;font-weight:600;">From $15</span>
               </div>
-              <a href="/auth/signup" style="display:block;background:#6366f1;color:#fff;text-align:center;padding:8px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;margin-top:8px;">🚁 Book This Zone →</a>
+              <a href="/book?zone=${zone.id}&name=${encodeURIComponent(zone.name)}" style="display:block;background:#6366f1;color:#fff;text-align:center;padding:8px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;margin-top:8px;">🚁 Book This Zone →</a>
               </div>
             </div>
           `);
