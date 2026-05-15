@@ -30,8 +30,6 @@ export default function LoginPage() {
     }
   };
 
-  const inp = { width: '100%', backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '0.75rem', padding: '0.875rem 1rem', color: '#1d1d1f', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' as const, fontFamily: 'inherit' };
-
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: '-apple-system, BlinkMacSystemFont, SF Pro Display, sans-serif' }}>
       <div style={{ width: '100%', maxWidth: '420px' }}>
@@ -48,14 +46,16 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '600', color: '#1d1d1f', marginBottom: '0.4rem' }}>Email address</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com" style={inp} />
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com"
+                style={{ width: '100%', backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '0.75rem', padding: '0.875rem 1rem', color: '#1d1d1f', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' as const }} />
             </div>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
                 <label style={{ fontSize: '0.82rem', fontWeight: '600', color: '#1d1d1f' }}>Password</label>
                 <Link href="/auth/forgot-password" style={{ fontSize: '0.8rem', color: '#6366f1', textDecoration: 'none', fontWeight: '500' }}>Forgot?</Link>
               </div>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="........" style={inp} />
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="........"
+                style={{ width: '100%', backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '0.75rem', padding: '0.875rem 1rem', color: '#1d1d1f', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' as const }} />
             </div>
             <button type="submit" disabled={loading} style={{ backgroundColor: '#1d1d1f', color: '#fff', border: 'none', borderRadius: '980px', padding: '0.9rem', fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer', opacity: loading ? 0.6 : 1, fontFamily: 'inherit' }}>
               {loading ? 'Signing in...' : 'Sign in'}
