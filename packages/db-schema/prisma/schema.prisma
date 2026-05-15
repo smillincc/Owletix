@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  PILOT
+  ADMIN
+  TRUST_SAFETY_REVIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  PENDING_VERIFICATION
+}
+
+enum MissionStatus {
+  DRAFT
+  MANUAL_REVIEW
+  PAYMENT_AUTHORIZED
+  PILOT_MATCHING
+  ACCEPTED
+  LIVE
+  COMPLETED
+  PAID_OUT
+  BLOCKED
+  CANCELLED
+  REJECTED
+}
+
+enum MissionType {
+  PUBLIC_ZONE
+  PRIVATE_PROPERTY
+}
+
+enum StreamStatus {
+  INITIALIZED
+  LIVE
+  ENDED
+}
+
+enum PayoutStatus {
+  PENDING
+  ON_HOLD
+  PROCESSED
+  FAILED
+}
+
+enum CaseStatus {
+  OPEN
+  RESOLVED
+  ESCALATED
+}
+
+model User {
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  passwordHash         String
+  firstName            String
+  lastName             String
+  phone                String?
+  role                 UserRole  @default(CUSTOMER)
+  status               UserStatus @default(ACTIVE)
+  emailVerified        Boolean   @default(false)
+  mfaEnabled           Boolean   @default(false)
+  mfaSecret            String?
+  failedLoginAttempts  Int       @default(0)
+  lockedUntil          DateTime?
+  lastLoginAt          DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  missions             Mission[] @relation("CustomerMissions")
+  pilotMissions        Mission[] @relation("PilotMissions")
+  pilotProfile         PilotProfile?
+  identityVerification IdentityVerification?
+  auditLogs            AuditLog[]
+  payouts              Payout[]
+}
+
+model PilotProfile {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id])
+  droneModel     String?
+  droneSerial    String?
+  faaRegistration String?
+  approvalStatus String  @default("PENDING")
+  isAvailable    Boolean @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model IdentityVerification {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  status     String   @default("NOT_STARTED")
+  providerRef String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model PublicZone {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  city        String
+  state       String
+  latitude    Float
+  longitude   Float
+  radiusMeters Float   @default(500)
+  isActive    Boolean  @default(true)
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  missions    Mission[]
+}
+
+model PrivatePropertyAuthorization {
+  id              String   @id @default(cuid())
+  customerId      String
+  propertyAddress String
+  propertyType    String
+  ownerName       String
+  status          String   @default("PENDING_REVIEW")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  missions        Mission[]
+}
+
+model Mission {
+  id                    String        @id @default(cuid())
+  customerId            String
+  customer              User          @relation("CustomerMissions", fields: [customerId], references: [id])
+  pilotId               String?
+  pilot                 User?         @relation("PilotMissions", fields: [pilotId], references: [id])
+  type                  MissionType
+  status                MissionStatus @default(DRAFT)
+  description           String
+  riskScore             Float         @default(0)
+  riskLevel             String        @default("LOW")
+  publicZoneId          String?
+  publicZone            PublicZone?   @relation(fields: [publicZoneId], references: [id])
+  propertyAuthorizationId String?
+  propertyAuthorization PrivatePropertyAuthorization? @relation(fields: [propertyAuthorizationId], references: [id])
+  agreedToSafetyTerms   Boolean       @default(false)
+  agreedNoPersonTracking Boolean      @default(false)
+  agreedNoSurveillance  Boolean       @default(false)
+  billedMinutes         Int?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  streamSessions        StreamSession[]
+  payment               Payment?
+  auditLogs             AuditLog[]
+}
+
+model StreamSession {
+  id        String       @id @default(cuid())
+  missionId String
+  mission   Mission      @relation(fields: [missionId], references: [id])
+  pilotId   String
+  roomName  String
+  status    StreamStatus @default(INITIALIZED)
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime     @default(now())
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  missionId   String   @unique
+  mission     Mission  @relation(fields: [missionId], references: [id])
+  amountCents Int
+  status      String   @default("PENDING")
+  stripeRef   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payout {
+  id          String      @id @default(cuid())
+  pilotId     String
+  pilot       User        @relation(fields: [pilotId], references: [id])
+  amountCents Int
+  status      PayoutStatus @default(PENDING)
+  stripeRef   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  action       String
+  actorId      String?
+  actor        User?    @relation(fields: [actorId], references: [id])
+  resourceType String?
+  resourceId   String?
+  missionId    String?
+  mission      Mission? @relation(fields: [missionId], references: [id])
+  metadata     String?
+  createdAt    DateTime @default(now())
+}
+
+model BannedLocation {
+  id           String  @id @default(cuid())
+  name         String
+  latitude     Float
+  longitude    Float
+  radiusMeters Float
+  reason       String?
+  createdAt    DateTime @default(now())
+}
+
+model RestrictedKeyword {
+  id       String  @id @default(cuid())
+  keyword  String  @unique
+  category String
+  weight   Int     @default(30)
+}
+
+model TrustSafetyCase {
+  id        String     @id @default(cuid())
+  status    CaseStatus @default(OPEN)
+  priority  String     @default("MEDIUM")
+  summary   String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model AbuseReport {
+  id          String   @id @default(cuid())
+  reporterId  String
+  category    String
+  description String
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+}
