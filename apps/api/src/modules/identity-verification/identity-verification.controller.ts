@@ -1,17 +1,26 @@
-import { Controller, Post, Get, Req, Headers, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, UseGuards, Headers, RawBody } from '@nestjs/common';
 import { IdentityVerificationService } from './identity-verification.service';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('identity-verification')
+@Controller('api/v1/identity-verification')
 export class IdentityVerificationController {
-  constructor(private readonly identityVerificationService: IdentityVerificationService) {}
+  constructor(private readonly service: IdentityVerificationService) {}
 
-  @Post('start') @UseGuards(JwtAuthGuard) @HttpCode(HttpStatus.CREATED)
-  start(@Req() req: any) { return this.identityVerificationService.createVerificationSession(req.user.id); }
+  @UseGuards(JwtAuthGuard)
+  @Post('start')
+  async start(@Req() req: any, @Body() body: any) {
+    const returnUrl = body.returnUrl || process.env.FRONTEND_URL + '/customer/verify?status=complete';
+    return this.service.startVerification(req.user.id, returnUrl);
+  }
 
-  @Get('status') @UseGuards(JwtAuthGuard)
-  getStatus(@Req() req: any) { return this.identityVerificationService.getVerificationStatus(req.user.id); }
+  @UseGuards(JwtAuthGuard)
+  @Get('status')
+  async status(@Req() req: any) {
+    return this.service.getStatus(req.user.id);
+  }
 
-  @Post('webhook') @HttpCode(HttpStatus.OK)
-  webhook(@Req() req: any, @Headers('stripe-signature') sig: string) { return this.identityVerificationService.handleStripeWebhook(req.rawBody, sig); }
+  @Post('webhook')
+  async webhook(@Headers('stripe-signature') sig: string, @Body() payload: any) {
+    return this.service.handleWebhook(JSON.stringify(payload), sig);
+  }
 }
