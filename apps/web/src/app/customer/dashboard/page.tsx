@@ -45,7 +45,7 @@ export default function CustomerDashboard() {
       </div>
 
       {/* Main */}
-      <div style={{ marginLeft:'240px', padding:'2.5rem', overflowX:'hidden' as const }}>
+      <div style={{ marginLeft:'240px', padding:'2.5rem 3rem', overflowX:'hidden' as const }}>
         <h1 style={{ fontSize:'1.75rem', fontWeight:'800', letterSpacing:'-0.03em', color:'#1d1d1f', marginBottom:'0.25rem' }}>
           Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.firstName} 👋
         </h1>
