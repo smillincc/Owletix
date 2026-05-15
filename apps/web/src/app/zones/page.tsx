@@ -146,7 +146,17 @@ export default function ZonesPage() {
           const el = document.createElement('div');
           el.style.cssText = `width:34px;height:34px;background:${color};border:3px solid #fff;border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;`;
           el.innerHTML = zone.category === 'Coastal' ? '🌊' : zone.category === 'Desert' ? '🏜️' : '🌿';
-          const popup = new mgl.Popup({ offset:20, maxWidth:'260px' }).setHTML(`
+          // Check if zone is near restricted airspace
+          const LAANC_REQUIRED_ZONES = ['2','4','7','9','10']; // Near SMO, LAX, TOA
+          const needsLAANC = LAANC_REQUIRED_ZONES.includes(zone.id);
+          const approvalBadge = needsLAANC
+            ? '<span style="font-size:10px;background:#fffbeb;color:#d97706;border:1px solid #fde68a;border-radius:99px;padding:2px 8px;font-weight:700;">⚠️ LAANC Required</span>'
+            : '<span style="font-size:10px;background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;border-radius:99px;padding:2px 8px;font-weight:600;">✓ Approved</span>';
+          const conflictWarning = needsLAANC
+            ? '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:5px 7px;margin-bottom:6px;"><p style="font-size:10px;color:#92400e;margin:0;font-weight:600;">⚠️ This zone requires LAANC authorization before flying. Use the FAA button below to get instant approval.</p></div>'
+            : '';
+
+          const popup = new mgl.Popup({ offset:20, maxWidth:'280px' }).setHTML(`
             <div style="font-family:-apple-system,sans-serif;padding:10px;">
               <span style="font-size:10px;font-weight:700;color:${color};background:${color}20;padding:2px 8px;border-radius:99px;">${zone.category}</span>
               <h3 style="font-weight:800;font-size:14px;color:#1d1d1f;margin:6px 0 2px;">${zone.name}</h3>
@@ -155,10 +165,13 @@ export default function ZonesPage() {
               <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:6px 8px;margin-bottom:8px;">
                 <p style="font-size:10px;color:#92400e;margin:0;line-height:1.4;">⚖️ ${zone.notes}</p>
               </div>
+              \${conflictWarning}
               <a href="https://b4ufly.aloft.ai/?lat=${zone.lat}&lng=${zone.lng}" target="_blank" style="display:block;background:#1d1d1f;color:#fff;text-align:center;padding:7px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;margin-bottom:6px;">🛡 Check LAANC Authorization — Official FAA</a>
               <div style="display:flex;gap:4px;">
-                <span style="font-size:10px;background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;border-radius:99px;padding:2px 8px;font-weight:600;">✓ Approved</span>
+                \${approvalBadge}
                 <span style="font-size:10px;background:#f0f0ff;color:#6366f1;border-radius:99px;padding:2px 8px;font-weight:600;">From $15</span>
+              </div>
+              <a href="/auth/signup" style="display:block;background:#6366f1;color:#fff;text-align:center;padding:8px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;margin-top:8px;">🚁 Book This Zone →</a>
               </div>
             </div>
           `);
