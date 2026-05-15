@@ -1,24 +1,20 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copy root workspace files
-COPY ../../package*.json ./
-COPY package*.json ./apps/api/
+# Copy entire monorepo
+COPY . .
 
-# Install ALL workspace dependencies including @nestjs/cli
-RUN npm install
+# Install all deps (includes @nestjs/cli from apps/api/devDependencies)
+RUN cd apps/api && npm install
 
-# Copy API source
-COPY . ./apps/api/
-
-WORKDIR /app/apps/api
-RUN npx nest build
+# Build the NestJS app
+RUN cd apps/api && npx nest build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY package*.json ./
+COPY --from=builder /app/apps/api/package*.json ./
 RUN npm install --omit=dev
 
 COPY --from=builder /app/apps/api/dist ./dist
