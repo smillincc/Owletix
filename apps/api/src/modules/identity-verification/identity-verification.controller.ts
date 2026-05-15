@@ -2,7 +2,7 @@ import { Controller, Post, Get, Body, Req, UseGuards, Headers } from '@nestjs/co
 import { IdentityVerificationService } from './identity-verification.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
-@Controller('api/v1/identity-verification')
+@Controller('identity-verification')
 export class IdentityVerificationController {
   constructor(private readonly service: IdentityVerificationService) {}
 
