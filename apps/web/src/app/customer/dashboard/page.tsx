@@ -27,7 +27,7 @@ export default function CustomerDashboard() {
   return (
     <div style={{ minHeight:'100vh', backgroundColor:'#f5f5f7', fontFamily:'-apple-system, BlinkMacSystemFont, SF Pro Display, sans-serif', display:'flex' }}>
       {/* Sidebar */}
-      <div style={{ position:'fixed', left:0, top:0, bottom:0, width:'220px', backgroundColor:'#fff', borderRight:'1px solid rgba(0,0,0,0.08)', padding:'1.5rem', display:'flex', flexDirection:'column', zIndex:100 }}>
+      <div style={{ position:'fixed', left:0, top:0, bottom:0, width:'240px', backgroundColor:'#fff', borderRight:'1px solid rgba(0,0,0,0.08)', padding:'1.5rem 1.25rem', display:'flex', flexDirection:'column', zIndex:50, overflowY:'auto' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', marginBottom:'2.5rem' }}>
           <span style={{ fontSize:'1.5rem' }}>🦉</span>
           <span style={{ fontWeight:'800', fontSize:'1rem', color:'#1d1d1f' }}>Owletix</span>
@@ -45,7 +45,7 @@ export default function CustomerDashboard() {
       </div>
 
       {/* Main */}
-      <div style={{ marginLeft:'220px', padding:'2.5rem', flex:1 }}>
+      <div style={{ marginLeft:'240px', padding:'2.5rem', flex:1, minWidth:0, maxWidth:'calc(100vw - 240px)' }}>
         <h1 style={{ fontSize:'1.75rem', fontWeight:'800', letterSpacing:'-0.03em', color:'#1d1d1f', marginBottom:'0.25rem' }}>
           Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.firstName} 👋
         </h1>
