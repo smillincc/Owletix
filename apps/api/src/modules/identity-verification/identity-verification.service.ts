@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import Stripe from 'stripe';
 
 @Injectable()
@@ -8,7 +8,7 @@ export class IdentityVerificationService {
 
   constructor(private prisma: PrismaService) {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-      apiVersion: '2025-04-30.basil',
+      apiVersion: '2023-10-16',
     });
   }
 
@@ -17,7 +17,6 @@ export class IdentityVerificationService {
     if (!user) throw new Error('User not found');
 
     try {
-      // Create Stripe Identity verification session
       const session = await this.stripe.identity.verificationSessions.create({
         type: 'document',
         metadata: { userId },
@@ -28,10 +27,9 @@ export class IdentityVerificationService {
             require_matching_selfie: true,
           },
         },
-        return_url: returnUrl || process.env.FRONTEND_URL + '/customer/verify?status=complete',
+        return_url: returnUrl || (process.env.FRONTEND_URL + '/customer/verify?status=complete'),
       });
 
-      // Update user status to pending
       await this.prisma.user.update({
         where: { id: userId },
         data: { identityVerificationStatus: 'PENDING' },
@@ -39,7 +37,6 @@ export class IdentityVerificationService {
 
       return { url: session.url, sessionId: session.id };
     } catch (err) {
-      // Fallback for test mode without Identity enabled
       await this.prisma.user.update({
         where: { id: userId },
         data: { identityVerificationStatus: 'PENDING' },
@@ -49,14 +46,13 @@ export class IdentityVerificationService {
   }
 
   async getStatus(userId: string) {
-    const user = await this.prisma.user.findUnique({
+    return this.prisma.user.findUnique({
       where: { id: userId },
       select: { identityVerificationStatus: true, identityVerified: true },
     });
-    return user;
   }
 
-  async handleWebhook(payload: any, signature: string) {
+  async handleWebhook(payload: string, signature: string) {
     const webhookSecret = process.env.STRIPE_IDENTITY_WEBHOOK_SECRET || '';
     let event: Stripe.Event;
 

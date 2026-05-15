@@ -1,6 +1,6 @@
-import { Controller, Post, Get, Body, Req, UseGuards, Headers, RawBody } from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, UseGuards, Headers } from '@nestjs/common';
 import { IdentityVerificationService } from './identity-verification.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @Controller('api/v1/identity-verification')
 export class IdentityVerificationController {
